@@ -1,15 +1,23 @@
 #!/usr/bin/env python
 
 # template for writing new AWS batch scripts
-
 import argparse
+import datetime
+import os
+import re
 import subprocess
+import tarfile
+import time
+
+from collections import defaultdict
 
 from utilities.log_util import get_logger, log_command
 
+import boto3
+from boto3.s3.transfer import TransferConfig
 
 # an s3 bucket to upload your logs, if you want them
-S3_LOG_DIR = "s3://your-bucket/script_logs/"
+S3_LOG_DIR = "s3://salzman-lab/script_logs/"
 
 
 def get_parser():
@@ -18,12 +26,57 @@ def get_parser():
     so that evros can test them before launching a job
     """
     parser = argparse.ArgumentParser(
-        prog="template.py", formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        prog="template.py",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description="Run SICILIAN"
     )
 
-    parser.add_argument("--message", default="Hello world!")
+    requiredNamed = parser.add_argument_group("required arguments")
 
+    """requiredNamed.add_argument(
+        "--S3_input_data_path",
+        required=True,
+        help="Location of data in bucket",
+    )"""
+
+    requiredNamed.add_argument(
+        "--S3_output_path",
+        required=True,
+        help="Location to store results",
+    )
+
+    requiredNamed.add_argument(
+        "--name",
+        required=True,
+        help="Name of run",
+    )
+"""
+    requiredNamed.add_argument(
+        "--r_ends",
+        required=True,
+        help="Format of fastq file extension",
+    )
+
+    requiredNamed.add_argument(
+        "--bc_pattern",
+        required=True,
+        help="Barcode pattern",
+    )
+"""
     return parser
+
+def whitelist(out_path, name):
+    """
+    Whitelist step of SICILIAN
+    """
+
+    t_config = TransferConfig(use_threads=False, num_download_attempts=25)
+
+    dest_dir = os.path.join(out_path, name)
+    if not os.path.exists(dest_dir):
+        os.makediirs(dest_dir)
+
+    return dest_dir
 
 
 def get_default_requirements():
@@ -48,17 +101,10 @@ def main(logger):
 if __name__ == "__main__":
     mainlogger, log_file, file_handler = get_logger(__name__)
 
+    dest_dir = whitelist(args.output_path, args.name)
+
     try:
         main(mainlogger)
     except:
         mainlogger.info("An exception occurred", exc_info=True)
         raise
-    finally:
-        # upload the log file no matter what. You can remove this if you don't
-        # want to accumulate logs
-        if log_file:
-            log_cmd = "aws s3 cp --quiet {} {}".format(log_file, S3_LOG_DIR)
-            mainlogger.info(log_cmd)
-
-            file_handler.close()
-            subprocess.check_output(log_cmd, shell=True)
