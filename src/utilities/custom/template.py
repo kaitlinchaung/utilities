@@ -48,9 +48,6 @@ def whitelist(name):
 
     t_config = TransferConfig(use_threads=False, num_download_attempts=25)
 
-    if not os.path.exists(name):
-        os.makedirs(name)
-
     return name
 
 
@@ -64,7 +61,7 @@ def get_default_requirements():
 def main(logger):
     # get the argument parser and parse args
     parser = get_parser()
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     dest_dir = whitelist(args.name)
     print(dest_dir)
@@ -74,6 +71,8 @@ def main(logger):
 
     # run a subprocess and log the attempt
     failed = log_command(logger, "echo {}".format(args.message), shell=True)
+
+    s3 = boto3.resource("s3")
 
 
 if __name__ == "__main__":
