@@ -33,50 +33,25 @@ def get_parser():
 
     requiredNamed = parser.add_argument_group("required arguments")
 
-    """requiredNamed.add_argument(
-        "--S3_input_data_path",
-        required=True,
-        help="Location of data in bucket",
-    )"""
-
-    requiredNamed.add_argument(
-        "--out_path",
-        required=True,
-        help="Location to store results",
-    )
-
     requiredNamed.add_argument(
         "--name",
         required=True,
         help="Name of run",
     )
-"""
-    requiredNamed.add_argument(
-        "--r_ends",
-        required=True,
-        help="Format of fastq file extension",
-    )
 
-    requiredNamed.add_argument(
-        "--bc_pattern",
-        required=True,
-        help="Barcode pattern",
-    )
-"""
     return parser
 
-def whitelist(out_path, name):
+def whitelist(name):
     """
     Whitelist step of SICILIAN
     """
 
     t_config = TransferConfig(use_threads=False, num_download_attempts=25)
 
-    dest_dir = os.path.join(out_path, name)
-    if not os.path.exists(dest_dir):
-        os.makediirs(dest_dir)
+    if not os.path.exists(name):
+        os.makedirs(name)
 
-    return dest_dir
+    return name
 
 
 def get_default_requirements():
@@ -101,7 +76,8 @@ def main(logger):
 if __name__ == "__main__":
     mainlogger, log_file, file_handler = get_logger(__name__)
 
-    dest_dir = whitelist(args.out_path, args.name)
+    dest_dir = whitelist(args.name)
+    print(dest_dir)
 
     try:
         main(mainlogger)
