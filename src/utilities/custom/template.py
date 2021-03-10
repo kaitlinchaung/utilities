@@ -40,7 +40,7 @@ def get_parser():
     )"""
 
     requiredNamed.add_argument(
-        "--S3_output_path",
+        "--out_path",
         required=True,
         help="Location to store results",
     )
@@ -101,7 +101,7 @@ def main(logger):
 if __name__ == "__main__":
     mainlogger, log_file, file_handler = get_logger(__name__)
 
-    dest_dir = whitelist(args.output_path, args.name)
+    dest_dir = whitelist(args.out_path, args.name)
 
     try:
         main(mainlogger)
