@@ -66,6 +66,9 @@ def main(logger):
     parser = get_parser()
     args = parser.parse_args()
 
+    dest_dir = whitelist(args.name)
+    print(dest_dir)
+
     # use the logger
     logger.info("Attempting to echo the message...")
 
@@ -74,13 +77,6 @@ def main(logger):
 
 
 if __name__ == "__main__":
-    mainlogger, log_file, file_handler = get_logger(__name__)
-
-    dest_dir = whitelist(args.name)
-    print(dest_dir)
-
-    try:
-        main(mainlogger)
-    except:
-        mainlogger.info("An exception occurred", exc_info=True)
-        raise
+    mainlogger, log_file, file_handler = ut_log.get_logger(__name__)
+    s3c = boto3.client("s3")
+    main(mainlogger)
