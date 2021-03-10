@@ -61,7 +61,7 @@ def get_default_requirements():
 def main(logger):
     # get the argument parser and parse args
     parser = get_parser()
-    args, unknown = parser.parse_known_args()
+    args = parser.parse_args()
 
     dest_dir = whitelist(args.name)
     print(dest_dir)
